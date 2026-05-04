@@ -6,13 +6,11 @@
     <title>odesseu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Подключаем Pathway Gothic One (аналог Special Gothic) и другие шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Pathway+Gothic+One&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
         
-        /* Применяем новый шрифт */
         body {
             font-family: 'Pathway Gothic One', sans-serif;
             color: #fff;
@@ -35,6 +33,7 @@
         }
 
         .ui { position: fixed; inset: 0; z-index: 10; padding: 28px 32px; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+        
         .glass {
             background: rgba(255,255,255,0.07);
             backdrop-filter: blur(28px) saturate(1.8) brightness(1.05);
@@ -44,7 +43,6 @@
         }
 
         .status-card { border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; gap: 11px; width: fit-content; animation: fadeDown 0.6s cubic-bezier(0.16,1,0.3,1) both; }
-        
         @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
 
         .av-wrap { position: relative; width: 38px; height: 38px; flex-shrink: 0; }
@@ -62,10 +60,32 @@
             position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; padding: 8px 12px; 
             border-radius: 13px; cursor: pointer; text-decoration: none; color: rgba(255,255,255,0.6); transition: 0.2s; 
         }
-        .nav-item:hover { color: #fff; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .nav-icon { width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.09); display: flex; align-items: center; justify-content: center; }
 
+        /* Заголовок слева снизу */
         .main-title { position: fixed; bottom: 30px; left: 32px; z-index: 10; animation: fadeUp 0.7s 0.15s cubic-bezier(0.16,1,0.3,1) both; }
+        
+        /* Соцсети справа снизу */
+        .social-nav { 
+            position: fixed; bottom: 30px; right: 32px; z-index: 10; 
+            display: flex; gap: 10px; 
+            animation: fadeUp 0.7s 0.2s cubic-bezier(0.16,1,0.3,1) both; 
+        }
+
+        .social-btn {
+            width: 48px; height: 48px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .social-btn:hover { 
+            transform: translateY(-4px); 
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .social-btn img { width: 22px; height: 22px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8; }
+        .social-btn:hover img { opacity: 1; }
+
         @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
         
         .main-title h1 { 
@@ -115,16 +135,57 @@
         </a>
     </div>
 </div>
+
 <div class="main-title">
     <h1>odesseu<em>.</em></h1>
     <div style="font-family:'DM Mono'; font-size:11px; opacity:0.3; letter-spacing:3px">DIGITAL ARCHITECT</div>
 </div>
+
+<!-- Блок соцсетей -->
+<div class="social-nav">
+    <a href="https://dsc.gg/s7-sw" target="_blank" class="social-btn glass" title="Discord">
+        <img src="resources/icons/discord.png" alt="Discord">
+    </a>
+    <a href="https://t.me/murrdevs" target="_blank" class="social-btn glass" title="Telegram">
+        <img src="resources/icons/telegram.png" alt="Telegram">
+    </a>
+</div>
+
 <script>
     const videos = [ 'resources/videos/bg.mp4', 'resources/videos/bg2.mp4' ];
-    function initBackground() { const videoEl = document.getElementById('main-bg'); const randomVideo = videos[Math.floor(Math.random() * videos.length)]; videoEl.src = randomVideo; }
+    function initBackground() { 
+        const videoEl = document.getElementById('main-bg'); 
+        const randomVideo = videos[Math.floor(Math.random() * videos.length)]; 
+        videoEl.src = randomVideo; 
+    }
     initBackground();
-    const DISCORD_ID = '1048169367935926283'; function lanyardConnect() { const ws = new WebSocket('wss://api.lanyard.rest/socket'); let heartbeat; ws.onopen = () => ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_ID } })); ws.onmessage = e => { const msg = JSON.parse(e.data); if (msg.op === 1) heartbeat = setInterval(() => ws.send(JSON.stringify({ op: 3 })), msg.d.heartbeat_interval); if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) applyPresence(msg.d); }; ws.onclose = () => { clearInterval(heartbeat); setTimeout(lanyardConnect, 3000); }; }
-    function applyPresence(data) { const st = data.discord_status || 'offline'; document.getElementById('s-dot').className = 's-dot ' + st; document.getElementById('s-name').textContent = data.discord_user?.global_name || 'odesseu'; if (data.discord_user?.avatar) { const av = document.getElementById('av-img'); av.src = `https://cdn.discordapp.com/avatars/${data.discord_user.id}/${data.discord_user.avatar}.webp?size=80`; av.style.display = 'block'; document.getElementById('av-ph').style.display = 'none'; } const act = data.activities?.find(a => a.type !== 4) || data.activities?.find(a => a.type === 4); document.getElementById('s-act').textContent = act ? (act.details || act.state || act.name) : st; }
+
+    const DISCORD_ID = '1048169367935926283'; 
+    function lanyardConnect() { 
+        const ws = new WebSocket('wss://api.lanyard.rest/socket'); 
+        let heartbeat; 
+        ws.onopen = () => ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_ID } })); 
+        ws.onmessage = e => { 
+            const msg = JSON.parse(e.data); 
+            if (msg.op === 1) heartbeat = setInterval(() => ws.send(JSON.stringify({ op: 3 })), msg.d.heartbeat_interval); 
+            if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) applyPresence(msg.d); 
+        }; 
+        ws.onclose = () => { clearInterval(heartbeat); setTimeout(lanyardConnect, 3000); }; 
+    }
+
+    function applyPresence(data) { 
+        const st = data.discord_status || 'offline'; 
+        document.getElementById('s-dot').className = 's-dot ' + st; 
+        document.getElementById('s-name').textContent = data.discord_user?.global_name || 'odesseu'; 
+        if (data.discord_user?.avatar) { 
+            const av = document.getElementById('av-img'); 
+            av.src = `https://cdn.discordapp.com/avatars/${data.discord_user.id}/${data.discord_user.avatar}.webp?size=80`; 
+            av.style.display = 'block'; 
+            document.getElementById('av-ph').style.display = 'none'; 
+        } 
+        const act = data.activities?.find(a => a.type !== 4) || data.activities?.find(a => a.type === 4); 
+        document.getElementById('s-act').textContent = act ? (act.details || act.state || act.name) : st; 
+    }
     lanyardConnect();
 </script>
 </body>
